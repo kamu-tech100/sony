@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhythm of the Day</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f4ff;
+      color: #333;
+      padding-top: 30px;
+    }
+    h1 {
+      color: #4a6df0;
+    }
+    p, div, nav {
+      font-size: 20px;
+      margin: 10px;
+    }
+    input.butt {
+      padding: 10px 20px;
+      font-size: 18px;
+      background: #4a6df0;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    input.butt:hover {
+      background: #2f4ed8;
+    }
+    .am {
+      font-size: 100px;
+    }
+    .log {
+      position: relative;
+      bottom: -250px;
+      width: 50%;
+      height: 30px;
+      font-size: large;
+      font-weight: bold;
+      background-color: green;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    a {
+      text-decoration: none;
+      color: white;
+    }
+    .clas {
+      position: relative;
+      bottom: -250px;
+      background-color: darkgreen;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      height: 30px;
+    }
+
+    /* Alarm Section */
+    .alarm-section {
+      background: #dfe8ff;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px auto;
+      width: 320px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .alarm-section input,
+    .alarm-section select,
+    .alarm-section button {
+      font-size: 16px;
+      padding: 5px;
+      margin: 5px;
+    }
+    #alarmStatus {
+      font-weight: bold;
+      margin-top: 10px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rhythm of the Day</h1>
+  <div class="am">🤳</div>
+
+  <p>Time: 00:00:00</p>
+  <p id="distance">Distance: 0.00 m (0.000 km)</p>
+
+  <input class="butt" type="button" value="START">
+  <nav id="at"></nav>
+  <div id="message"></div>
+  <div id="duration"></div>
+
+  <!-- 🔔 Alarm Section -->
+  <div class="alarm-section">
+    <h2>Set Alarm ⏰</h2>
+    <input type="time" id="alarmTime"><br>
+
+    <!-- 🎵 Ringtone Selection -->
+    <label for="ringtoneSelect">Choose Ringtone:</label><br>
+    <select id="ringtoneSelect">
+      <option value="default">Default Tone</option>
+      <option value="beep.mp3">Beep</option>
+      <option value="ringtone.mp3">Classic Ring</option>
+    </select><br>
+
+    <label for="customRingtone">Or upload your own:</label><br>
+    <input type="file" id="customRingtone" accept="audio/*"><br>
+
+    <button id="setAlarmBtn">Set Alarm</button>
+    <button id="clearAlarmBtn">Clear Alarm</button>
+    <div id="alarmStatus">No alarm set.</div>
+  </div>
+
+  <button class="clas"><a href="sign.html">Sign up</a></button>
+  <button class="log"><a href="login.html">NEXT</a></button>
+
+  <script>
+    const btn = document.querySelector("input.butt");
+    const distanceDisplay = document.getElementById("distance");
+    let timeInterval;
+    let started = false;
+    let startDate;
+    let totalDistance = 0;
+    const speed = 1; // meters per second
+
+    btn.addEventListener("click", () => {
+      const message = document.getElementById("message");
+      const durationDiv = document.getElementById("duration");
+      const now = new Date();
+
+      if (!started) {
+        started = true;
+        btn.value = "STOP";
+        startDate = now;
+        totalDistance = 0;
+
+        const startTime = now.toLocaleTimeString();
+        document.getElementById("at").innerHTML =
+          `<span style="font-size:24px; color:green; font-weight:bold;">Started at:</span> ${startTime}`;
+
+        function updateTime() {
+          const current = new Date();
+          const elapsedMs = current - startDate;
+          const seconds = Math.floor((elapsedMs / 1000) % 60);
+          const minutes = Math.floor((elapsedMs / (1000 * 60)) % 60);
+          const hours = Math.floor((elapsedMs / (1000 * 60 * 60)) % 24);
+
+          const timeString =
+            `${hours.toString().padStart(2, "0")}:` +
+            `${minutes.toString().padStart(2, "0")}:` +
+            `${seconds.toString().padStart(2, "0")}`;
+
+          document.querySelector("p").innerHTML = "Time: " + timeString;
+
+          const elapsedSeconds = elapsedMs / 1000;
+          totalDistance = elapsedSeconds * speed;
+          const kilometers = totalDistance / 1000;
+
+          distanceDisplay.innerHTML =
+            `Distance: ${totalDistance.toFixed(2)} m (${kilometers.toFixed(3)} km)`;
+
+          checkAlarm(current);
+        }
+
+        timeInterval = setInterval(updateTime, 1000);
+        updateTime();
+
+        message.innerHTML =
+          `<span style="font-size:24px; color:green; font-weight:bold;">▶ Time started:</span> ${startTime}`;
+        durationDiv.innerHTML = "";
+      } else {
+        started = false;
+        clearInterval(timeInterval);
+        btn.value = "START";
+
+        const stopDate = now;
+        const stopTime = stopDate.toLocaleTimeString();
+
+        document.getElementById("at").innerHTML =
+          `<span style="font-size:24px; color:red; font-weight:bold;">Stopped at:</span> ${stopTime}`;
+        message.innerHTML =
+          `<span style="font-size:24px; color:red; font-weight:bold;">⏸ Time ended:</span> ${stopTime}`;
+
+        const durationMs = stopDate - startDate;
+        const seconds = Math.floor((durationMs / 1000) % 60);
+        const minutes = Math.floor((durationMs / (1000 * 60)) % 60);
+        const hours = Math.floor((durationMs / (1000 * 60 * 60)) % 24);
+
+        const durationString =
+          `${hours.toString().padStart(2, "0")}:` +
+          `${minutes.toString().padStart(2, "0")}:` +
+          `${seconds.toString().padStart(2, "0")}`;
+
+        durationDiv.innerHTML =
+          `<span style="font-size:24px; color:blue; font-weight:bold;">⏱ Measured time:</span> ${durationString}<br>
+           <span style="font-size:22px; color:purple; font-weight:bold;">🏁 Total distance:</span> ${totalDistance.toFixed(2)} m (${(totalDistance / 1000).toFixed(3)} km)`;
+      }
+    });
+
+    // 🔔 Alarm functionality
+    const alarmInput = document.getElementById("alarmTime");
+    const setAlarmBtn = document.getElementById("setAlarmBtn");
+    const clearAlarmBtn = document.getElementById("clearAlarmBtn");
+    const alarmStatus = document.getElementById("alarmStatus");
+    const ringtoneSelect = document.getElementById("ringtoneSelect");
+    const customRingtone = document.getElementById("customRingtone");
+
+    let alarmTime = null;
+    let alarmTriggered = false;
+    let alarmSound = new Audio("beep.mp3"); // default
+
+    customRingtone.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        alarmSound = new Audio(fileURL);
+      }
+    });
+
+    ringtoneSelect.addEventListener("change", (event) => {
+      const value = event.target.value;
+      if (value === "default") {
+        alarmSound = new Audio("beep.mp3");
+      } else {
+        alarmSound = new Audio(value);
+      }
+    });
+
+    setAlarmBtn.addEventListener("click", () => {
+      const timeValue = alarmInput.value;
+      if (!timeValue) {
+        alert("Please select a time for the alarm!");
+        return;
+      }
+      alarmTime = timeValue;
+      alarmTriggered = false;
+      alarmStatus.textContent = `Alarm set for ${alarmTime}`;
+      alarmStatus.style.color = "green";
+    });
+
+    clearAlarmBtn.addEventListener("click", () => {
+      alarmTime = null;
+      alarmTriggered = false;
+      alarmStatus.textContent = "No alarm set.";
+      alarmStatus.style.color = "#333";
+      alarmSound.pause();
+      alarmSound.currentTime = 0;
+    });
+
+    function checkAlarm(currentTime) {
+      if (!alarmTime || alarmTriggered) return;
+      const [hours, minutes] = alarmTime.split(":").map(Number);
+      if (
+        currentTime.getHours() === hours &&
+        currentTime.getMinutes() === minutes &&
+        currentTime.getSeconds() === 0
+      ) {
+        alarmTriggered = true;
+        alarmSound.play();
+        alarmStatus.textContent = "Alarm triggered!";
+        alarmStatus.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>

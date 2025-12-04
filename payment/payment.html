@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Payment + WhatsApp Verification</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body { font-family: Arial; background:#eef2ff; text-align:center; padding-top:40px; }
+.box { background:white; padding:25px; width:330px; margin:auto; border-radius:12px; box-shadow:0 4px 14px rgba(0,0,0,0.12); }
+button { padding:12px 20px; font-size:18px; background:#4a6df0; color:white; border:none; border-radius:6px; margin-top:15px; width:85%; cursor:pointer; }
+button:hover { background:#2f4ed8; }
+input { padding:10px; width:80%; font-size:16px; border-radius:6px; border:1px solid #aaa; margin-top:15px; }
+.hidden { display:none; }
+#timer { color:red; margin-top:10px; font-weight:bold; }
+</style>
+</head>
+<body>
+
+<!-- STEP 1: PAYMENT -->
+<div class="box" id="step1">
+    <h2>Payment Required</h2>
+    <p>To unlock <b>Rhythm of the Day</b>, please pay:</p>
+    <h1 style="color:green">500 RWF</h1>
+
+    <h3>Pay to: <span style="color:blue;">0790050216</span></h3>
+    <button onclick="pay()">PAY NOW 📲</button>
+
+    <!-- HIDDEN UNTIL USER RETURNS FROM USSD -->
+    <div id="confirmSection" class="hidden">
+        <p>After paying, enter the amount:</p>
+        <input type="number" id="amountPaid" placeholder="Enter amount (500+)" />
+        <button onclick="confirmPayment()">CONFIRM PAYMENT ✔</button>
+    </div>
+</div>
+
+<!-- STEP 2: WHATSAPP VERIFICATION -->
+<div class="box hidden" id="step2">
+    <h2>WhatsApp Verification</h2>
+    <p>A 6-digit code has been <b>sent to your WhatsApp</b>.</p>
+
+    <input type="text" id="codeInput" placeholder="Enter verification code">
+    <button onclick="verifyCode()">VERIFY ✔</button>
+
+    <p id="timer"></p>
+    <button id="resendBtn" class="hidden" onclick="resendCode()">Resend Code 🔁</button>
+</div>
+
+<script>
+let generatedCode = null;
+let countdown = 60;
+let timerInterval = null;
+
+// OPEN MTN PAYMENT & MARK THAT USER CLICKED PAY
+function pay(){
+    localStorage.setItem("startedPayment", "yes");
+    window.location.href = "tel:*182*1*1*0790050216%23";
+}
+
+// WHEN USER RETURNS, SHOW CONFIRM SECTION IF PAYMENT STARTED
+window.onload = function() {
+    if (localStorage.getItem("startedPayment") === "yes") {
+        document.getElementById("confirmSection").classList.remove("hidden");
+    }
+}
+
+// CONFIRM PAYMENT & SEND CODE
+function confirmPayment(){
+    const amount = Number(document.getElementById("amountPaid").value);
+
+    if(!amount){
+        alert("Enter the amount you paid.");
+        return;
+    }
+
+    if(amount < 500){
+        alert("Minimum payment is 500 RWF.");
+        return;
+    }
+
+    localStorage.setItem("amountPaid", amount);
+
+    sendCode();
+}
+
+// SEND CODE FUNCTION
+function sendCode(){
+    generatedCode = Math.floor(100000 + Math.random() * 900000);
+    alert("Your WhatsApp verification code:\n\n" + generatedCode);
+
+    document.getElementById("step1").classList.add("hidden");
+    document.getElementById("step2").classList.remove("hidden");
+
+    startTimer();
+}
+
+// TIMER
+function startTimer(){
+    countdown = 60;
+    document.getElementById("resendBtn").classList.add("hidden");
+    document.getElementById("timer").textContent = "Resend available in: " + countdown + "s";
+
+    timerInterval = setInterval(() => {
+        countdown--;
+        document.getElementById("timer").textContent = "Resend available in: " + countdown + "s";
+
+        if(countdown <= 0){
+            clearInterval(timerInterval);
+            document.getElementById("timer").textContent = "";
+            document.getElementById("resendBtn").classList.remove("hidden");
+        }
+    }, 1000);
+}
+
+// RESEND CODE
+function resendCode(){
+    sendCode();
+}
+
+// VERIFY CODE
+function verifyCode(){
+    const userCode = document.getElementById("codeInput").value;
+
+    if(userCode == generatedCode){
+        alert("Verification successful! 🎉");
+        localStorage.setItem("paid","yes");
+        window.location.href = "time.html";
+    } else {
+        alert("Incorrect code. Try again.");
+    }
+}
+</script>
+
+</body>
+</html>

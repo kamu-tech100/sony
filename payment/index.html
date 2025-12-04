@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rhythm of the Day</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background: #f0f4ff; padding-top: 30px; }
+    h1 { color: #4a6df0; }
+    .am { font-size: 100px; }
+    p, nav, div { font-size: 20px; margin: 10px; }
+    input.butt { padding: 10px 20px; font-size: 18px; background: #4a6df0; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    input.butt:hover { background: #2f4ed8; }
+
+    .alarm-section { background: #dfe8ff; border-radius: 8px; padding: 15px; margin: 20px auto; width: 320px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    #alarmStatus { font-weight: bold; margin-top: 10px; color: #333; }
+  </style>
+</head>
+<body>
+
+
+  <h1>Timer</h1>
+  <div class="am">🤳</div>
+
+  <p>Time: 00:00:00</p>
+  <p id="distance">Distance: 0.00 m (0.000 km)</p>
+
+  <input class="butt protected" id="startBtn" type="button" value="START">
+  <nav id="at"></nav>
+  <div id="message"></div>
+  <div id="duration"></div>
+
+  <!-- Alarm Section -->
+  <div class="alarm-section">
+    <h2>Set Alarm ⏰</h2>
+
+    <input type="time" id="alarmTime" class="protected"><br>
+
+    <label>Choose Ringtone:</label><br>
+    <select id="ringtoneSelect" class="protected">
+      <option value="default">Default Tone</option>
+      <option value="beep.mp3">Beep</option>
+      <option value="ringtone.mp3">Classic Ring</option>
+    </select><br>
+
+    <label>Upload Custom Audio:</label><br>
+    <input type="file" id="customRingtone" accept="audio/*" class="protected"><br>
+
+    <button id="setAlarmBtn" class="protected">Set Alarm</button>
+    <button id="clearAlarmBtn" class="protected">Clear Alarm</button>
+
+    <div id="alarmStatus">No alarm set.</div>
+  </div>
+
+<script>
+  // Only redirect on interaction with protected elements
+  function redirectToPayment() {
+    window.location.href = "payment.html";
+  }
+
+  document.querySelectorAll(".protected").forEach(el => {
+    el.addEventListener("click", e => {
+      e.preventDefault();
+      redirectToPayment();
+    });
+    el.addEventListener("change", e => {
+      e.preventDefault();
+      redirectToPayment();
+    });
+  });
+</script>
+
+</body>
+</html>
